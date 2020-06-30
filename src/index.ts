@@ -128,7 +128,7 @@ async function uploadSource(source: any): Promise<boolean> {
 
 program
   .command('deploy')
-  .description('initialise a project')
+  .description('deploy a project')
   .action(async function(env, options) {
     const projectRootDir = process.cwd();
     console.log();
@@ -151,19 +151,10 @@ program
         console.log("- Failed uploading package");
       }
     } catch (err) {
-      // console.log(clc.yellow("functions:") + " Upload Error: " + err.message);
+      console.log(`  - Error: ${err}`);
       throw err;
     }
     console.log()
-  });
-
-program
-  .command('verify')
-  .description('verify the project')
-  .option('-s, --setup_mode [mode]', 'Which setup mode to use')
-  .action(function(env, options) {
-    let projectRootDir = process.cwd();
-    console.log(projectRootDir)
   });
 
 program.parse(process.argv);
