@@ -13,11 +13,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/archiver": "^3.1.0",
-    "@types/fs-extra": "^5.0.5",
-    "@types/lodash": "^4.14.156",
-    "@types/minimatch": "^3.0.3",
-    "@types/tmp": "^0.2.0",
     "archiver": "^4.0.1",
     "commander": "^5.1.0",
     "fs-extra": "^0.23.1",
@@ -26,6 +21,13 @@
     "tmp": "^0.2.1"
   },
   "devDependencies": {
+    "@types/archiver": "^3.1.0",
+    "@types/form-data": "^2.5.0",
+    "@types/fs-extra": "^5.0.5",
+    "@types/lodash": "^4.14.156",
+    "@types/minimatch": "^3.0.3",
+    "@types/node-fetch": "^2.5.7",
+    "@types/tmp": "^0.2.0",
     "@types/commander": "^2.9.1",
     "@types/node": "^14.0.13",
     "typescript": "^2.4.1"

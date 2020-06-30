@@ -114,11 +114,11 @@ async function uploadSource(source: any): Promise<void> {
       // 'Authorization': accessToken,
     },
     body: form
-  }).then(data => {
+  }).then((data: any) => {
     return data.json();
-  }).then(data => {
+  }).then((data: any) => {
     console.log(JSON.stringify(data));
-  }).catch(err => {
+  }).catch((err: any) => {
     console.log(err)
   });
 };
@@ -130,13 +130,19 @@ program
     const projectRootDir = process.cwd();
     console.log();
     
+    console.log("Uploading project to servers");
     const source = await packageSource(projectRootDir);
 
     if (!source) {
+      console.log("- Failed zipping package ");
+      console.log();
       return;
     }
+
+    console.log("- Zipped package for uploading");
     try {
       await uploadSource(source);
+      console.log("- Uploaded package (Congrats!)");
       // console.log(
       //   clc.green.bold("functions:") +
       //     " " +
@@ -147,6 +153,7 @@ program
       // console.log(clc.yellow("functions:") + " Upload Error: " + err.message);
       throw err;
     }
+    console.log()
   });
 
 program
