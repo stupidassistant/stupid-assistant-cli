@@ -102,7 +102,7 @@ program
       );
   };
 
-async function uploadSource(source: any): Promise<void> {
+async function uploadSource(source: any): Promise<boolean> {
   const form = new FormData();
   form.append("Content-Type", "application/octect-stream");
   form.append('file', source.stream);
@@ -117,9 +117,12 @@ async function uploadSource(source: any): Promise<void> {
   }).then((data: any) => {
     return data.json();
   }).then((data: any) => {
-    console.log(JSON.stringify(data));
+    if (data.error)
+      return false;
+    else 
+      return true;
   }).catch((err: any) => {
-    console.log(err)
+    return false
   });
 };
 
@@ -130,7 +133,7 @@ program
     const projectRootDir = process.cwd();
     console.log();
     
-    console.log("Uploading project to servers");
+    console.log("Deploying project to servers");
     const source = await packageSource(projectRootDir);
 
     if (!source) {
@@ -141,14 +144,12 @@ program
 
     console.log("- Zipped package for uploading");
     try {
-      await uploadSource(source);
-      console.log("- Uploaded package (Congrats!)");
-      // console.log(
-      //   clc.green.bold("functions:") +
-      //     " " +
-      //     clc.bold(options.config.get("functions.source")) +
-      //     " folder uploaded successfully"
-      // );
+      let result = await uploadSource(source);
+      if (result == true) {
+        console.log("- Uploaded package (Congrats!)");
+      } else {
+        console.log("- Failed uploading package");
+      }
     } catch (err) {
       // console.log(clc.yellow("functions:") + " Upload Error: " + err.message);
       throw err;
