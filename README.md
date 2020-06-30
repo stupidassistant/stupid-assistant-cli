@@ -1,0 +1,1 @@
+stupid-assistant-cli
