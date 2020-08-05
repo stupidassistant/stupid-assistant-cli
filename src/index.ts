@@ -26,24 +26,25 @@ program
         console.log("- Received files");
         return res.json();
       })
-      .then(json => {
-        if (json.error)
-          return console.log("Failed fetching template blueprint from server");
-        
+      .then((fileList: Record<string, string>) => {
         console.log("- Writing files");
-        return Promise.resolve(json.fileList.map(async (v: {name: string, body: string}) => {
-          let dir = path.join(projectRootDir, v.name);
+
+        return Promise.resolve(Object.keys(fileList).map(async (name: string) => {
+          let dir = path.join(projectRootDir, name);
 
           if (!fs.existsSync(path.dirname(dir)))
             fs.mkdirSync(path.dirname(dir));
             
-          console.log("  + " + v.name);
-          return fs.writeFileSync(dir, v.body);
+          console.log("  + " + name);
+          return fs.writeFileSync(dir, fileList[name]);
         })).then(v => {
           console.log("- Finished initialising project");
           console.log();
         });
-      });
+      }).catch(() => {
+        console.log("- Failed fetching template blueprint from server");
+        console.log();
+      });;
   });
 
   var CONFIG_DEST_FILE = ".runtimeconfig.json";
