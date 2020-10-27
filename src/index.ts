@@ -9,6 +9,7 @@ import * as archiver from "archiver";
 import * as _ from "lodash";
 import * as tmp from "tmp";
 import * as FormData from "form-data";
+import { configstore } from './configstore';
 
 program
   .version('0.0.1')
@@ -103,27 +104,30 @@ program
       );
   };
 
-async function uploadSource(source: any): Promise<boolean> {
+async function uploadSource(source: any): Promise<{
+  error: boolean,
+  message: string,
+  errorMessages: string[]
+}> {
   const form = new FormData();
   form.append("Content-Type", "application/octect-stream");
   form.append('file', source.stream);
+  
+  const token = configstore.get("token");
 
   return fetch('https://api.stupidassistant.com/uploadPackage', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
-      // 'Authorization': accessToken,
+      'Authorization': token,
     },
     body: form
   }).then((data: any) => {
     return data.json();
-  }).then((data: any) => {
-    if (data.error)
-      return false;
-    else 
-      return true;
   }).catch((err: any) => {
-    return false
+    return {
+      error: false
+    }
   });
 };
 
@@ -146,10 +150,16 @@ program
     console.log("- Zipped package for uploading");
     try {
       let result = await uploadSource(source);
-      if (result == true) {
+      if (result.error != true) {
         console.log("- Uploaded package (Congrats!)");
       } else {
         console.log("- Failed uploading package");
+
+        if (result.errorMessages) {
+          result.errorMessages.forEach(m => {
+            console.log("  - " + m);
+          })
+        }
       }
     } catch (err) {
       console.log(`  - Error: ${err}`);
@@ -157,5 +167,80 @@ program
     }
     console.log()
   });
+  
+program
+  .command('useToken <token>')
+  .description('use an Deployment Token')
+  .action(async function(token, options) {
+    configstore.set("token", token);
+    console.log("Stored Token");
+  });
+
+program
+  .command('getToken')
+  .description('use an Deployment Token')
+  .action(async function(options) {
+    const token = configstore.get("token");
+    console.log(`Your current token is "${token}"`);
+  });
+
+
+program
+  .command('verifyToken')
+  .description('use an Deployment Token')
+  .action(async function(options) {
+    const token = configstore.get("token");
+
+    const valid = await verifyDeploymentToken(token);
+    console.log(`Your deployment token is ${valid ? "VALID" : "INVALID"}`);
+  });
+
+program
+  .command('getOrgs')
+  .description('use an Deployment Token')
+  .action(async function(options) {
+    const token = configstore.get("token");
+    const organisations = await getOrgs(token);
+
+    console.log("Your teams are:");
+    Object.keys(organisations).forEach(orgId => {
+      console.log(`- ${organisations[orgId].teamName} (${orgId})`);
+    });
+  });
+
+async function verifyDeploymentToken(verifyDeploymentToken: string): Promise<boolean> {
+  return fetch('https://api.stupidassistant.com/deploymentToken/verify', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': verifyDeploymentToken,
+    }
+  }).then((data: any) => {
+    return data.json();
+  }).then((data: any) => {
+    return data.valid || false;
+  }).catch((err: any) => {
+    return false
+  });
+};
+
+async function getOrgs(verifyDeploymentToken: string): Promise<Record<string, {
+  teamName: string,
+  membershipType: string
+}>> {
+  return fetch('https://api.stupidassistant.com/deploymentToken/organisations', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': verifyDeploymentToken,
+    }
+  }).then((data: any) => {
+    return data.json();
+  }).then((data: any) => {
+    return data.organisations || {};
+  }).catch((err: any) => {
+    return false
+  });
+};
 
 program.parse(process.argv);
